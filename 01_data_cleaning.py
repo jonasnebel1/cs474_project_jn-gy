@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
 # importing datasets
 edu_d = pd.read_csv("us_census_dataset/Educationv.csv")
@@ -78,6 +80,13 @@ fin_c = fin_d.rename(columns = fin_rename_dict)
 ind_c = ind_c.loc[:, ~ind_c.columns.str.startswith(('male', 'female'))]			
 
 # ---------------------
+# Calculating poverty proportional data using a cutoff of
+
+
+
+
+
+# ---------------------
 # Joining cleaned tables
 # We join the tables on year as the 2019 year is not reflected in the education data available. Then, we need to trim this year from finance and industry through this join.
 
@@ -85,3 +94,10 @@ cens_c = edu_c.merge(ind_c, on=["year", "cd"])
 cens_c = cens_c.merge(fin_c, on=["year", "cd"])
 
 print(cens_c.columns)
+
+# --------------------- 
+# Here we split the data into training and validation sets using a standard 80:20 propotion
+
+# fcol = [
+	
+	
