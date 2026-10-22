@@ -99,5 +99,37 @@ print(cens_c.columns)
 # Here we split the data into training and validation sets using a standard 80:20 propotion
 
 # fcol = [
-	
-	
+
+import os
+os.makedirs("data", exist_ok=True)
+
+LOW = ["Less_than_$5000", "$5000_to_$9999", "$10000_to_$14999",
+       "$15000_to_$19999", "$20000_to_$24999"]
+ALL = LOW + ["$25000_to_$34999", "$35000_to_$49999", "$50000_to_$74999",
+             "$75000_to_$99999", "$100000_to_$149999", "$150000_or_more"]
+
+# drop Puerto Rico (education values appear copied from AK)
+df = cens_c.copy()
+df = df[df["year"].isin([2020, 2021])].copy()
+df = df[~df["cd"].str.endswith("_PR")].copy()
+
+# district's share of households under $25k vs the national share
+df["low_share"] = df[LOW].sum(axis=1) / df[ALL].sum(axis=1)
+national = df.groupby("year")[LOW].sum().sum(axis=1) / df.groupby("year")[ALL].sum().sum(axis=1)
+print(national)
+df["low_income"] = (df["low_share"] > df["year"].map(national)).astype(int)
+
+# features as proportions of each district's total
+edu = ["collegeGrad", "highGrad", "noGrad"]
+df[edu] = df[edu].div(df[edu].sum(axis=1), axis=0)
+ind = [c for c in df.columns if c.startswith("total")]
+df[ind] = df[ind].div(df[ind].sum(axis=1), axis=0)
+
+# drop income columns so they can't leak into the model
+df["district"] = df["cd"]
+df = df.drop(columns=ALL + ["low_share"])
+df.to_csv("data/clean.csv", index=False)
+
+print(df.shape)
+print(df["low_income"].value_counts(normalize=True))
+print(df["year"].value_counts())
